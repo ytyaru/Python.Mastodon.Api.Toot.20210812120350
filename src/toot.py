@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # coding: utf8
 import requests
-import os, sys, argparse, json
+import os, sys, argparse, json, urllib.parse
 def exept_null(f):
     def _wrapper(*args, **kwargs):
         try: return f(*args, **kwargs)
@@ -32,24 +32,48 @@ class FileWriter:
     @classmethod
     def json(self, path, content):
         with open(path, mode='w', encoding='utf-8') as f: json.dump(content, f)
-class Toot:
+class Authenticator:
+    @property
+    def Token(self):
+        token = FileReader.text(Path.here('token.txt'))
+        if token is None: raise Exception('token.txtがありません。マストドンのインスタンスサーバでアカウントを作り、アプリを作って、アクセストークンを取得し、その値をtoken.txtに書いて保存してください。')
+        return token
+#        return FileReader.text(Path.here('token.txt'))
+class Api:
     def __init__(self):
-        self.__base_url = 'https://'
-    def __get_base_url(self):
-        host = FileReader.text(Path.here('host.txt'))
-        return f"https://{host}"
+        self.__auth = Authenticator()
+    @property
+    def Auth(self): return self.__auth
     @property
     def BaseUrl(self, domain=None):
         candidates = [domain, FileReader.text(Path.here('host.txt')), 'mstdn.jp']
         hosts = [c for c in candidates if c is not None]
         return f'https://{hosts[0]}/'
+    @property
+    def Header(self):
+        return {
+            'User-Agent': 'Mozilla/5.0 (X11; CrOS armv7l 13597.84.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.187 Safari/537.36',
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.Auth.Token}',
+        }
+        
+class Toot(Api):
+    @property
+    def ApiUrl(self): return urllib.parse.urljoin(self.BaseUrl, 'api/v1/statuses')
     def toot(self, text):
-        #requests.post()
-        return self.BaseUrl
+        data = {}
+        data['status'] = text
+        data['media_ids'] = []
+        data['poll'] = {'options':[], 'expires_in':0}
+        res = requests.post(self.ApiUrl, headers=self.Header, data=data)
+        print(res.status_code)
+        print(res.headers)
+        print(res.text)
+        return res.json()
 
 if __name__ == "__main__":
     toot = Toot()
     content = '''PythonでAPI を叩いてみた。
 #mastodon #api'''
-    print(toot.toot(content))
+    print(json.dumps(toot.toot(content)))
 
