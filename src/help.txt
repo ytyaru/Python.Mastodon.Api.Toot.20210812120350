@@ -1,0 +1,8 @@
+MastodonのAPIを叩いてTootする。	${version}
+Usage:
+  ${this} [-h] [-v] [MESSAGE ...]
+Documents:
+  https://docs.joinmastodon.org/methods/statuses/
+Examples:
+  ${this} MSG1 MSG2 MSG3
+  echo -e 'MSG1\nMSG2\nMSG3' | ${this} 

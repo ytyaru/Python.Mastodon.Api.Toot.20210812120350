@@ -2,7 +2,6 @@
 # coding: utf8
 import requests
 import os, sys, argparse, json, urllib.parse
-from string import Template
 def exept_null(f):
     def _wrapper(*args, **kwargs):
         try: return f(*args, **kwargs)
@@ -15,12 +14,6 @@ class Path:
     @classmethod
     def here(cls, path): # このファイルからの絶対パス
         return cls.__expand(os.path.join(os.path.dirname(os.path.abspath(__file__)), path))
-    @classmethod
-    def name(cls, path): # このファイル名
-        return os.path.basename(path)
-    @classmethod
-    def this_name(cls): # このファイル名
-        return os.path.basename(__file__)
     @classmethod
     def __expand(cls, path): # homeを表すチルダや環境変数を展開する
         return os.path.expandvars(os.path.expanduser(path))
@@ -72,44 +65,15 @@ class Toot(Api):
         data['status'] = text
         data['media_ids'] = []
         data['poll'] = {'options':[], 'expires_in':0}
-        print(self.Header, file=sys.stderr)
-        print(data, file=sys.stderr)
-#        sys.exit(0)
         res = requests.post(self.ApiUrl, headers=self.Header, data=data)
-        print(res.status_code, file=sys.stderr)
-        print(res.headers, file=sys.stderr)
-        print(res.text, file=sys.stderr)
+        print(res.status_code)
+        print(res.headers)
+        print(res.text)
         return res.json()
-class App:
-    @classmethod
-    def Version(self): return '0.0.1'
-    @classmethod
-    def Help(self):
-        t = Template(FileReader.text(Path.here('help.txt')))
-        return t.substitute(this=Path.this_name(), version=self.Version())
-    @classmethod
-    def Toot(self, content): return json.dumps(Toot().toot(content))
-#        toot = Toot()
-#        json.dumps(toot.toot(content))
-class Cli:
-    def __cmd(self, text):
-        print(text)
-        sys.exit(0)
-    def __get_content(self):
-        if 1 < len(sys.argv): return '\n'.join(sys.argv[1:])
-        else: return sys.stdin.read().rstrip('\n')
-    def __parse(self):
-        if 1 < len(sys.argv):
-            if   '-h' == sys.argv[1]: self.__cmd(App.Help())
-            elif '-v' == sys.argv[1]: self.__cmd(App.Version())
-        self.__cmd(App.Toot(self.__get_content()))
-    def run(self): self.__parse()
 
 if __name__ == "__main__":
-    Cli().run()
-#    sys.exit(0)
-#    toot = Toot()
-#    content = '''api/v1/statuses で空の引数media_ids,pollを消してみる。403エラー。必須らしい。
+    toot = Toot()
+    content = '''api/v1/statuses で空の引数media_ids,pollを消してみる。403エラー。必須らしい。
 #mastodon #api'''
-#    print(json.dumps(toot.toot(content)))
+    print(json.dumps(toot.toot(content)))
 
