@@ -45,7 +45,6 @@ class Authenticator:
         token = FileReader.text(Path.here('token.txt'))
         if token is None: raise Exception('token.txtがありません。マストドンのインスタンスサーバでアカウントを作り、アプリを作って、アクセストークンを取得し、その値をtoken.txtに書いて保存してください。')
         return token
-#        return FileReader.text(Path.here('token.txt'))
 class Api:
     def __init__(self):
         self.__auth = Authenticator()
@@ -74,7 +73,6 @@ class Toot(Api):
         data['poll'] = {'options':[], 'expires_in':0}
         print(self.Header, file=sys.stderr)
         print(data, file=sys.stderr)
-#        sys.exit(0)
         res = requests.post(self.ApiUrl, headers=self.Header, data=data)
         print(res.status_code, file=sys.stderr)
         print(res.headers, file=sys.stderr)
@@ -89,8 +87,6 @@ class App:
         return t.substitute(this=Path.this_name(), version=self.Version())
     @classmethod
     def Toot(self, content): return json.dumps(Toot().toot(content))
-#        toot = Toot()
-#        json.dumps(toot.toot(content))
 class Cli:
     def __cmd(self, text):
         print(text)
@@ -104,12 +100,5 @@ class Cli:
             elif '-v' == sys.argv[1]: self.__cmd(App.Version())
         self.__cmd(App.Toot(self.__get_content()))
     def run(self): self.__parse()
-
 if __name__ == "__main__":
     Cli().run()
-#    sys.exit(0)
-#    toot = Toot()
-#    content = '''api/v1/statuses で空の引数media_ids,pollを消してみる。403エラー。必須らしい。
-#mastodon #api'''
-#    print(json.dumps(toot.toot(content)))
-
